@@ -1,0 +1,10 @@
+Level editor for pacman:
+
+1. Choose a name for your level, and do not include .csv tag
+2. Define the dimensions of the block you want to use in the terminal
+3. Move the block around with the arrow keys until it is in the position that you want
+4. Press C to paste block into place and add it to the export list
+5. Press R to redefine the dimensions of the block that you are using
+6. Press O to rotate 90 degrees
+7. Press G to change from placing barrier or point
+8. When you are done, press F to save the file to the directory that you are running from
