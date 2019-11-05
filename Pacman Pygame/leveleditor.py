@@ -34,7 +34,7 @@ if edit != '':
 		xy.append((row))
 	print(xy)
 elif edit == '':
-	levelname = input("Enter level name (omit file tag): ")
+	levelname = input("Enter level name (omit file extension): ")
 
 while not accept:  
 	try:
@@ -84,6 +84,8 @@ while exit == False:
 		if event.key == pygame.K_g:
 			if value == 'barrier':
 				value = 'food'
+				rectwidth = 10
+				rectheight = 10
 			elif value == 'food':
 				value = 'barrier'
 			print(value)
