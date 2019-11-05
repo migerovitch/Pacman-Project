@@ -3,14 +3,16 @@ from pygame.locals import *
 import random
 import csv
 
+pygame.init()
+
 width = 600 #This can change
 height = 600 #This can change
 playersize = 20 #This can change
 fps = 15 #This can change
 clock = pygame.time.Clock()
 
-#Create dis
-DISPLAY=pygame.display.set_mode((width,height))
+#Create display
+DISPLAY = pygame.display.set_mode((width,height))
 pygame.display.set_caption("waka waka waka")
 
 #define colors with rgb values
@@ -20,12 +22,26 @@ black = (0,0,0)
 grey = (128,128,128)
 darkBlue = (0,20,121)
 
+#load sprites
+spriteLeft = [pygame.image.load('pacmanSprites/pacmanLeft.png'), pygame.image.load('pacmanSprites/pacmanLeftD.png')]
+spriteRight = [pygame.image.load('pacmanSprites/pacmanRight.png'), pygame.image.load('pacmanSprites/pacmanRightD.png')]
+spriteUp = [pygame.image.load('pacmanSprites/pacmanUp.png'), pygame.image.load('pacmanSprites/pacmanUpD.png')]
+spriteDown = [pygame.image.load('pacmanSprites/pacmanDown.png'), pygame.image.load('pacmanSprites/pacmanDownD.png')]
+steps = 0
+left = False
+right = False
+up = False
+down = False
+
+
 #starting coords of player
-pacX = 40
-pacY = 40
+pacX = width/2
+pacY = height/2
 
 yChange = 0
 xChange = 0
+
+ghostCoords = {"blue":(0,0,0), "orange":(0,0,0), "green":(0,0),"red":(0,0,0)}
 
 score = 0
 
@@ -34,7 +50,7 @@ xy = []
 blocks = []
 barriers = []
 food = []
-levelname = (input("Levelname (omit file tag):"))
+levelname = (input("Levelname (omit file extension):"))
 
 #if true then no entry
 touching = False
@@ -46,12 +62,9 @@ csvfile =open(levelname +".csv",'r')
 obj=csv.reader(csvfile)
 for row in obj:
 	blocks.append((row))
-print(blocks)
 
-pacX = width/2
-pacY = height/2
-
-
+blocks[0][0] = pacX
+blocks[0][1] = pacY 
 
 for block in blocks:
 	if block[0] == "barrier":
@@ -67,6 +80,39 @@ def buildlevel(xy,screen,bcolor,fcolor):
 	for coord in food:
 		pygame.draw.rect(screen,fcolor,[float(coord[1]),float(coord[2]),float(coord[3]),float(coord[4])])
 
+def drawSprites():
+	DISPLAY.fill(grey)
+	global steps
+	if left:
+		if steps + 1 <= 1:
+			steps += 1
+		else:
+			steps = 0
+		DISPLAY.blit(spriteLeft[steps],(pacX,pacY))
+	if right:
+		
+		if steps + 1 <= 1:
+			steps += 1
+		else:
+			steps = 0
+		DISPLAY.blit(spriteRight[steps],(pacX,pacY))
+	if up:
+		if steps + 1 <= 1:
+			steps += 1
+		else:
+			steps = 0
+		DISPLAY.blit(spriteUp[steps],(pacX,pacY))
+
+	if down:
+		if steps + 1 <= 1:
+			steps += 1
+		else:
+			steps = 0
+		DISPLAY.blit(spriteDown[steps],(pacX,pacY))
+	
+	buildlevel(xy,DISPLAY,darkBlue,white)
+	pygame.display.update()
+	
 maxscore = len(food)
 
 
@@ -81,18 +127,35 @@ while gameExit == False:
 			if event.key == pygame.K_LEFT:
 				xChange = -playersize/2
 				yChange = 0
+				left = True
+				right = False
+				up = False
+				down = False
 				#print(str(x)+", "+str(y))
 			elif event.key == pygame.K_RIGHT:
 				xChange = playersize/2
 				yChange = 0
+				left = False
+				right = True
+				up = False
+				down = False
 				#print(str(x)+", "+str(y))
 			elif event.key == pygame.K_UP:
 				yChange = -playersize/2
 				xChange = 0
+				left = False
+				right = False
+				up = True
+				down = False
 				#print(str(x)+", "+str(y))
 			elif event.key == pygame.K_DOWN:
 				yChange = playersize/2
 				xChange = 0
+				left = False
+				right = False
+				up = False
+				down = True			
+		
 		"""
 		#Make player stop moving after keyup
 		if event.type == pygame.KEYUP:
@@ -101,6 +164,7 @@ while gameExit == False:
 			if event.key == pygame.K_UP or pygame.K_DOWN:
 				yChange = 0
 		"""
+
 	#if player goes out of bounds then move them to the other side of the screen
 	if pacX > width or pacX < 0 or pacY > height or pacY < 0: 
 		if pacX > width: pacX = 0
@@ -134,18 +198,16 @@ while gameExit == False:
 			score += 1 
 			food.remove(coord)
 			print(score)
-
+	"""
 	if score == maxscore:
 		print("You Win!")
-		gameExit = True
+		#gameExit = True
+	"""
 
 	
 	
 	#draw everything on the display
-	DISPLAY.fill(grey)
-	pygame.draw.rect(DISPLAY,yellow,[pacX,pacY,playersize,playersize])
-	buildlevel(xy,DISPLAY,darkBlue,white)
-	pygame.display.update()
+	drawSprites()
 	clock.tick(fps)
 
 pygame.quit()
