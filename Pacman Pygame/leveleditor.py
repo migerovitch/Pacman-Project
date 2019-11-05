@@ -51,19 +51,9 @@ while exit == False:
 	for event in pygame.event.get():
 		if event.type == QUIT:
 			exit = True
-	if event.type == pygame.KEYDOWN:
-		#print(str(event.key))
-		if event.key == pygame.K_LEFT:
-			x += -20
-			#print(str(x)+", "+str(y))
-		elif event.key == pygame.K_RIGHT:
-			x += 20
-			#print(str(x)+", "+str(y))
-		elif event.key == pygame.K_UP:
-			y += -20
-			#print(str(x)+", "+str(y))
-		elif event.key == pygame.K_DOWN:
-			y += 20
+	if event.type == pygame.mouse.get_pressed()[0]:
+		x=pygame.mouse.get_pos()[0]
+		y=pygame.mouse.get_pos()[1]
 		if event.key == pygame.K_c:
 			if (value,x,y,rectwidth,rectheight) not in xy:
 				xy.append((value,x,y,rectwidth,rectheight))
