@@ -64,6 +64,8 @@ ghostCoords = {"blue":[width/2-50,height/2-50,blueGhost,0], "orange":[width/2-50
 
 score = 0
 
+font = pygame.font.SysFont(None, 25)
+
 #lists in order to build the level
 
 xy = []
@@ -80,6 +82,7 @@ powerup = False
 powerupTimer = 0
 #if true then system exit
 gameExit = False
+gameOver = False
 
 #read level csv and add rect parameters to list
 
@@ -95,13 +98,7 @@ for block in blocks:
 		food.append(block)
 	elif block[0] == "powerup":
 		powerups.append(block)
-print(barriers)
-print(food)
-print(powerups)
 
-	#draw 
-
-	#iterate through the level csv and draw.rect() each of the pellet and barrier blocks
 def buildlevel(xy,screen,bcolor,fcolor,pcolor):
 	for coord in barriers:
 		pygame.draw.rect(screen,bcolor,[float(coord[1]),float(coord[2]),float(coord[3]),float(coord[4])])
@@ -112,83 +109,89 @@ def buildlevel(xy,screen,bcolor,fcolor,pcolor):
 
 	#one function to draw all of the sprites and buildlevel()
 
-def drawSprites():
+def message_to_screen(msg,color):
+	text = font.render(msg, True, color)
+	text_rect = text.get_rect(center=(width/2, height/2))
+	DISPLAY.blit(text, text_rect)
+
+
+def drawSprites(_steps):
 	DISPLAY.fill(grey)
-	global steps
 	if left:
-		if steps + 1 <= 1:
-			steps += 1
+		if _steps + 1 <= 1:
+			_steps += 1
 		else:
-			steps = 0
-		DISPLAY.blit(pacmanLeft[steps],(pacX,pacY))
+			_steps = 0
+		DISPLAY.blit(pacmanLeft[_steps],(pacX,pacY))
 	if right:
-		if steps + 1 <= 1:
+		if _steps + 1 <= 1:
 			if not touching:
-				steps += 1
+				_steps += 1
 		else:
-			steps = 0
-		DISPLAY.blit(pacmanRight[steps],(pacX,pacY))
+			_steps = 0
+		DISPLAY.blit(pacmanRight[_steps],(pacX,pacY))
 	if up:
-		if steps + 1 <= 1:
-			steps += 1
+		if _steps + 1 <= 1:
+			_steps += 1
 		else:
-			steps = 0
-		DISPLAY.blit(pacmanUp[steps],(pacX,pacY))
+			_steps = 0
+		DISPLAY.blit(pacmanUp[_steps],(pacX,pacY))
 
 	if down:
-		if steps + 1 <= 1:
-			steps += 1
+		if _steps + 1 <= 1:
+			_steps += 1
 		else:
-			steps = 0
-		DISPLAY.blit(pacmanDown[steps],(pacX,pacY))
+			_steps = 0
+		DISPLAY.blit(pacmanDown[_steps],(pacX,pacY))
 
-
-
-	#draw and move ghosts around
-	
-	for ghost in ghostCoords:
-		ghostDirection = None
-
-		randGhostX = random.randrange(-2,2)
-		randGhostY = random.randrange(-2,2)
-
-		if random.randrange(0,2) == 1:	
-			for i in range(randGhostX):
-				ghostCoords[ghost][0] += (1*randGhostX) 
-		else:
-			for i in range(randGhostY):
-				ghostCoords[ghost][1] += (1*randGhostY)
-		if not powerup:
-			if randGhostX <= 0:
-				ghostDirection = 0
-			elif randGhostX >= 0:
-				ghostDirection = 1
-			elif randGhostY >= 0:
-				ghostDirection = 2
-			elif randGhostY <= 0:
-				ghostDirection = 3
-		else:
-			ghostDirection = 4
-
-
-		#print(f"X of {ghost}:{ghostCoords[ghost][0]}")
-		#print(f"Y of {ghost}:{ghostCoords[ghost][1]}")
-
-		DISPLAY.blit(ghostCoords[ghost][2][ghostDirection], (ghostCoords[ghost][0], ghostCoords[ghost][1]))
 		
 	
 	buildlevel(xy,DISPLAY,darkBlue,white,white)
 	pygame.display.update()
 
-def gameOver():
-	gameExit = True
-	sys.exit()
 	
 maxscore = len(food)
 
-
-#main game loop
 while gameExit == False:
+	while gameOver == True:
+		DISPLAY.fill(grey)
+		message_to_screen("You Died, Press P to play again or press Q to quit", red)
+		pygame.display.update()
+
+		for event in pygame.event.get():
+			if event.type == pygame.KEYDOWN:
+				if event.key == pygame.K_p:
+					#reset level varibles 
+					gameOver = False
+					pacX = width/2
+					pacY = height/2
+					yChange = 0
+					xChange = 0
+					steps = 0
+					touching = False
+					powerup = False
+					powerupTimer = 0
+					score = 0
+					csvfile =open(levelname +".csv",'r')
+					obj=csv.reader(csvfile)
+					for row in obj:
+						blocks.append((row))
+
+					for block in blocks:
+						if block[0] == "barrier":
+							barriers.append(block)
+						elif block[0] == "food":
+							food.append(block)
+						elif block[0] == "powerup":
+							powerups.append(block)
+					print(barriers)
+					print(food)
+					print(powerups)
+					ghostCoords = {"blue":[width/2-50,height/2-50,blueGhost,0], "orange":[width/2-50,height/2-50,orangeGhost,0], "red":[width/2-50,height/2-50,redGhost,0], "pink":[width/2-50,height/2-50,pinkGhost,0] }
+					break
+				elif event.key == pygame.K_q:
+					gameExit = True
+					gameOver = False
 	for event in pygame.event.get():
 		if event.type == QUIT:
 			gameExit = True
@@ -295,7 +298,6 @@ while gameExit == False:
 		powerupTimer = 0
 	elif powerup == True and powerupTimer < (fps*powerupTime):
 		powerupTimer += 1
-		print(powerupTimer//fps)
 
 	
 #is player touching a ghost? If so, if the powerup is active, reset the ghosts positions. If the powerup is inactive, end the game.
@@ -309,7 +311,8 @@ while gameExit == False:
 				ghostCoords[ghost][0] = width/2
 				ghostCoords[ghost][1] = height/2
 			else:
-				gameOver()
+				gameOver = True
+				print("You lose")
 		
 		
 	"""
@@ -321,7 +324,7 @@ while gameExit == False:
 	
 	
 	#draw everything on the display
-	drawSprites()
+	drawSprites(steps)
 	clock.tick(fps)
 	pygame.display.update()
 pygame.quit()
